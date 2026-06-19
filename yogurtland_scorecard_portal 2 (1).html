@@ -1404,7 +1404,7 @@ function renderDashboard(){const data=getFilteredData();const all=S.data;const s
 const fbcs=[...new Set(all.map(d=>d.store.fbc))].sort();const regions=[...new Set(all.map(d=>d.store.r))].sort();const states=[...new Set(all.map(d=>d.store.st))].sort();
 const wrap=h('div',{});
 const fr=h('div',{className:'search-bar'});
-const stSel=h('select',{});stSel.appendChild(h('option',{value:'all'},'All Stores'));all.map(d=>d.store.id).sort().forEach(id=>stSel.appendChild(h('option',{value:id},id)));stSel.value=S.filterStore;stSel.addEventListener('change',()=>{S.filterStore=stSel.value;S.page=0;render();});fr.appendChild(stSel);
+const stSel=h('select',{});stSel.appendChild(h('option',{value:'all'},'All Stores'));all.map(d=>d.store.id).sort().forEach(id=>stSel.appendChild(h('option',{value:id},id)));stSel.value=S.filterStore;stSel.addEventListener('change',()=>{S.filterStore=stSel.value;S.page=0;render();});if(S.fbcRole!=='manager')fr.appendChild(stSel);
 if(SALES.length){if(!S.salesDate)S.salesDate=SALES_DATES[SALES_DATES.length-1];const minDate=SALES_DATES[0],maxDate=SALES_DATES[SALES_DATES.length-1];const topDate=h('input',{type:'date',value:S.salesDate,min:minDate,max:maxDate,style:{maxWidth:'160px'}});topDate.addEventListener('change',()=>{S.salesDate=topDate.value||maxDate;render();});fr.appendChild(topDate);fr.appendChild(h('button',{className:'pill',onClick:()=>{S.salesDate=maxDate;render();}},'Latest'));}
 wrap.appendChild(fr);
 const stats=h('div',{className:'g2 fu'});
@@ -1875,10 +1875,10 @@ if(data.length===1&&SALES.length){
       });
     });
     twoCol.appendChild(rightCol);
-    rkCard.appendChild(twoCol);wrap.appendChild(rkCard);
+    rkCard.appendChild(twoCol);if(S.fbcRole!=='manager')wrap.appendChild(rkCard);
   }
 }
-wrap.appendChild(t5card);
+if(S.fbcRole!=='manager')wrap.appendChild(t5card);
 return wrap;}
 
 function initDashboardCharts(){const data=getFilteredData();const gradeData=GRADE_CFG.map(g=>({g:g.g,count:data.filter(s=>s.scores.grade.g===g.g).length,c:g.c})).filter(g=>g.count>0);
