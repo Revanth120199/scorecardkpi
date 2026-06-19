@@ -1307,7 +1307,7 @@ function genEval(){
 }
 
 
-const S={view:"dashboard",adminTab:"stores",currentUser:"Sam Kwon",sel:null,role:"admin",data:[],charts:{},search:"",filterStore:"all",filterState:"all",filterFbc:"all",filterRegion:"all",page:0,salesStore:"all",salesDate:"",mktMonth:"Jun-2026",attMonth:"Jun-2026"};
+const S={view:"dashboard",adminTab:"stores",currentUser:"Sam Kwon",sel:null,role:"admin",fbcUser:null,fbcRole:null,data:[],charts:{},search:"",filterStore:"all",filterState:"all",filterFbc:"all",filterRegion:"all",page:0,salesStore:"all",salesDate:"",mktMonth:"Jun-2026",attMonth:"Jun-2026"};
 const MKT_MONTHS=["Jan-2026","Feb-2026","Mar-2026","Apr-2026","May-2026","Jun-2026","Jul-2026","Aug-2026","Sep-2026","Oct-2026","Nov-2026","Dec-2026"];
 const OPEN_STORES=new Set(['CA348','CA285','CA255','CA254','CA306','CA313','CA315','CA333','CA303','CA108','CA111','CA112','CA130','CA166','CA164','CA170','CA169','CA192','CA218','CA202','CA216','CA220','CA232','CA234','CA233','CA244','CA251','CA288','CA323','CA125','CA231','CA289','CA328','CA115','CA316','CA302','CA346','CA330','CA343','CA344','CA278','CA314','CA204','CA292','CA295','CA305','CA341','CA146','CA217','CA247','CA294','CA340H','CA260','CA117','CA195','CA132','CA136','CA248','CA147','CA163','CA181','CA186','CA230','CA159','CA141','CA240','CA212','CA188','CA194','CA334','CA318','CA176','NV107','NV108','CA201','CA308','CA151','CA227','CO101','CA109','CA161','CO102','CA168','CA258','CO103','CA178','CA221','CO104','CA242','CA252','CA299','CA298','CA317','CA321','NV101','CA120','CA215','TX117','CA293','NV102','CA269','CA243','TX103','NV103','CA224','TX120','NV104','CA235','CA145','TX126','NV105','CA245','TX124','CA261','NV109','CA228','TX111','CA301','NV112','AZ105','CA173','TX119','AZ104','NV111','CA268','CA200','NV113','TX123','CA206','CA309','AZ103','LA101','TX105','CA287','NV110','CA123','LA102','TX102','CA185','TX101','CA153','CA193','CA133','LA104','TX109','CA291','CA280','CA296','UT101','CA110','CA304','NJ109','UT102','CA297','CA349','TX128','CA172','CA342','NJ110','CA183','UT107','CA210','CA273','CA208','UT103','CA137','CA177','CA279','CA286','CA290','CA253','CA129','CA347','CA179','CA238','CA157','CA128','CA284','CA165','CA237','CA283','CA184','CA148','CA106','CA250','CA167','CA187','CA119','CA332','CA205','CA322','CA142','CA118','LA103','CA277','CA131','CA175','CA158','CA226','CA257','CA329','CA325','CA324'].map(s=>'Yogurtland '+s));
 const STORE_ALIASES={'Yogurtland CA340':'Yogurtland CA340H'};
@@ -1914,7 +1914,7 @@ function renderDetail(){
   const sd=S.data.find(d=>d.store.id===S.sel);if(!sd)return h('div',{},'Not found');
   const{store,ev}=sd;
   const wrap=h('div',{});
-  wrap.appendChild(h('button',{className:'back',onClick:()=>{S.view='dashboard';render();}},'← Back to Dashboard'));
+  wrap.appendChild(h('button',{className:'back',onClick:()=>{S.view=S.fbcRole==='fbc'?'fbcportal':'dashboard';render();}},'← Back'));
   const headerWrap=h('div',{});
   const tabState={active:'overview'};
   const tabWrap=h('div',{});
@@ -1974,7 +1974,13 @@ function renderDetail(){
       const pg=h('div',{style:{display:'flex',gap:'8px'}});['Q1','Q2','Q3','Q4'].forEach((q,i)=>{const lb=h('label',{style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'6px',padding:'10px',borderRadius:'8px',background:ev.plSub[i]?'var(--gn-l)':'var(--g50)',cursor:'pointer'}});const cb=h('input',{type:'checkbox'});cb.checked=ev.plSub[i];cb.style.accentColor='var(--gn)';cb.addEventListener('change',()=>{ev.plSub[i]=cb.checked;recalc(sd);renderTabs();});lb.appendChild(cb);lb.appendChild(h('span',{style:{fontSize:'12px',fontWeight:700}},q));pg.appendChild(lb);});pc.appendChild(pg);content.appendChild(pc);
       // Sales
       const sc=h('div',{className:'card',style:{marginBottom:'12px'}});sc.appendChild(h('div',{className:'sh'},h('h3',{},'💰 Sales Performance'),h('span',{className:'sub'},`${scores.ops.salR.toFixed(1)}/20 pts`)));
-      const sg=h('div',{className:'g2',style:{marginBottom:0}});['compSales','tpdSales'].forEach((f,fi)=>{const col=h('div',{});col.appendChild(h('div',{style:{fontSize:'10px',fontWeight:600,color:'var(--g600)',marginBottom:'5px'}},fi===0?'Comp Sales %':'TPD Sales %'));const mg=h('div',{className:'mg'});MONTHS.forEach((m,mi)=>{const mw=h('div',{className:'mi'});mw.appendChild(h('label',{},m));const inp=h('input',{type:'number',step:'0.1',value:ev[f][mi]});if(parseFloat(ev[f][mi])<0)inp.className='neg';inp.addEventListener('input',()=>{ev[f][mi]=inp.value;inp.className=parseFloat(inp.value)<0?'neg':'';recalc(sd);renderTabs();});mw.appendChild(inp);mg.appendChild(mw);});col.appendChild(mg);sg.appendChild(col);});sc.appendChild(sg);content.appendChild(sc);
+      if(S.fbcRole==='fbc'){
+        sc.appendChild(h('div',{style:{fontSize:'11px',color:'var(--g500)',padding:'8px 10px',background:'var(--g50)',borderRadius:'7px',marginBottom:'10px'}},'📊 Sales data is loaded from Excel — read only'));
+        const sg2=h('div',{className:'g2',style:{marginBottom:0}});['compSales','tpdSales'].forEach((f,fi)=>{const col=h('div',{});col.appendChild(h('div',{style:{fontSize:'10px',fontWeight:600,color:'var(--g600)',marginBottom:'5px'}},fi===0?'Comp Sales %':'TPD Sales %'));const mg=h('div',{className:'mg'});MONTHS.forEach((m,mi)=>{const mw=h('div',{className:'mi'});mw.appendChild(h('label',{},m));const val=h('div',{style:{padding:'4px',borderRadius:'4px',background:'var(--g100)',fontSize:'11px',fontFamily:'var(--m)',textAlign:'center',fontWeight:600,color:parseFloat(ev[f][mi])<0?'var(--rd)':'var(--g700)'}},String(ev[f][mi]||'—'));mw.appendChild(val);mg.appendChild(mw);});col.appendChild(mg);sg2.appendChild(col);});sc.appendChild(sg2);
+      } else {
+        const sg=h('div',{className:'g2',style:{marginBottom:0}});['compSales','tpdSales'].forEach((f,fi)=>{const col=h('div',{});col.appendChild(h('div',{style:{fontSize:'10px',fontWeight:600,color:'var(--g600)',marginBottom:'5px'}},fi===0?'Comp Sales %':'TPD Sales %'));const mg=h('div',{className:'mg'});MONTHS.forEach((m,mi)=>{const mw=h('div',{className:'mi'});mw.appendChild(h('label',{},m));const inp=h('input',{type:'number',step:'0.1',value:ev[f][mi]});if(parseFloat(ev[f][mi])<0)inp.className='neg';inp.addEventListener('input',()=>{ev[f][mi]=inp.value;inp.className=parseFloat(inp.value)<0?'neg':'';recalc(sd);renderTabs();});mw.appendChild(inp);mg.appendChild(mw);});col.appendChild(mg);sg.appendChild(col);});sc.appendChild(sg);
+      }
+      content.appendChild(sc);
       // Guest Reviews & Recoveries
       const gc=h('div',{className:'card',style:{marginBottom:'12px'}});
       gc.appendChild(h('div',{className:'sh'},h('h3',{},'⭐ Guest Reviews & Recoveries'),h('span',{className:'sub'},`${scores.ops.gR.toFixed(1)}/10 pts (base: 5)`)));
@@ -2119,16 +2125,117 @@ function renderDetail(){
   return wrap;
 }
 
+// ── LOGIN SCREEN ──
+function renderLogin(){
+  const wrap=h('div',{style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#EAEBF0',padding:'20px'}});
+  const card=h('div',{style:{background:'#fff',borderRadius:'18px',padding:'44px 52px',maxWidth:'440px',width:'100%',boxShadow:'0 8px 40px rgba(0,0,0,.12)',textAlign:'center'}});
+  card.appendChild(h('img',{src:'./logo-yogurtland.svg',alt:'Yogurtland',style:{height:'42px',marginBottom:'24px'}}));
+  card.appendChild(h('div',{style:{fontSize:'20px',fontWeight:800,color:'var(--g900)',marginBottom:'6px'}},'Franchisee Scorecard'));
+  card.appendChild(h('div',{style:{fontSize:'13px',color:'var(--g500)',marginBottom:'32px'}},'Select your name to continue'));
+  const users=[
+    {name:'Katie Lincon', role:'fbc', initials:'KL', color:'#7B1FA2'},
+    {name:'Tim Lyons',    role:'fbc', initials:'TL', color:'#1565C0'},
+    {name:'Mario Marquez',role:'fbc', initials:'MM', color:'#00897B'},
+    {name:'Admin',        role:'admin',initials:'YL', color:'#E91E63'},
+  ];
+  users.forEach(u=>{
+    const btn=h('div',{style:{display:'flex',alignItems:'center',gap:'14px',padding:'14px 18px',borderRadius:'10px',border:'1.5px solid var(--g200)',marginBottom:'10px',cursor:'pointer',transition:'all .15s',background:'#fff'},
+      onClick:()=>{S.fbcUser=u.name;S.fbcRole=u.role;S.view=u.role==='admin'?'dashboard':'fbcportal';render();}});
+    btn.addEventListener('mouseenter',()=>{btn.style.borderColor=u.color;btn.style.background=u.color+'0D';});
+    btn.addEventListener('mouseleave',()=>{btn.style.borderColor='var(--g200)';btn.style.background='#fff';});
+    const av=h('div',{style:{width:'40px',height:'40px',borderRadius:'50%',background:u.color,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:'12px',fontWeight:700,flexShrink:0}},u.initials);
+    const info=h('div',{style:{textAlign:'left'}});
+    info.appendChild(h('div',{style:{fontSize:'14px',fontWeight:700,color:'var(--g900)'}},u.name));
+    info.appendChild(h('div',{style:{fontSize:'11px',color:'var(--g500)'}},u.role==='admin'?'Full access · all stores':'FBC · enter scores for your stores'));
+    btn.appendChild(av);btn.appendChild(info);card.appendChild(btn);
+  });
+  card.appendChild(h('div',{style:{fontSize:'10px',color:'var(--g400)',marginTop:'20px'}},'v8.0 · 2026 · Yogurtland Franchisee Scorecard'));
+  wrap.appendChild(card);return wrap;
+}
+
+// ── FBC PORTAL (my stores list) ──
+function renderFbcPortal(){
+  const myStores=S.data.filter(d=>d.store.fbc===S.fbcUser);
+  const wrap=h('div',{className:'fu'});
+  const avg=myStores.length?myStores.reduce((s,d)=>s+d.scores.total,0)/myStores.length:0;
+  const avgG=getGrade(avg);
+  const belowBP=myStores.filter(d=>d.scores.total<85).length;
+  // Summary KPI bar
+  const statsRow=h('div',{className:'g4',style:{marginBottom:'20px'}});
+  const mkStat=(label,val,color,sub)=>{const c=h('div',{className:'card',style:{padding:'18px 20px'}});c.appendChild(h('div',{className:'sl'},label));const r=h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginTop:'4px'}});r.appendChild(h('span',{style:{fontSize:'26px',fontWeight:800,fontFamily:'var(--m)',color}},val));c.appendChild(r);if(sub)c.appendChild(h('div',{style:{fontSize:'10px',color:'var(--g500)',marginTop:'2px'}},sub));return c;};
+  const avgCard=h('div',{className:'card',style:{padding:'18px 20px'}});avgCard.appendChild(h('div',{className:'sl'},'Portfolio Average'));const avgR=h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginTop:'4px'}});avgR.appendChild(h('span',{style:{fontSize:'26px',fontWeight:800,fontFamily:'var(--m)',color:avgG.c}},avg.toFixed(1)));avgR.appendChild(gb(avgG));avgCard.appendChild(avgR);statsRow.appendChild(avgCard);
+  statsRow.appendChild(mkStat('Total Stores',String(myStores.length),'var(--bl)'));
+  statsRow.appendChild(mkStat('Need Attention',String(belowBP),belowBP>0?'var(--rd)':'var(--gn)','Below B+ (< 85)'));
+  wrap.appendChild(statsRow);
+  if(!myStores.length){wrap.appendChild(h('div',{className:'card',style:{padding:'40px',textAlign:'center',color:'var(--g400)'}},'No stores assigned.'));return wrap;}
+  // Section header
+  const shd=h('div',{style:{marginBottom:'12px',display:'flex',alignItems:'center',justifyContent:'space-between'}});
+  shd.appendChild(h('div',{style:{fontSize:'13px',fontWeight:700,color:'var(--g600)',textTransform:'uppercase',letterSpacing:'0.8px'}},`${myStores.length} Assigned Stores · Click to Enter Scores`));
+  wrap.appendChild(shd);
+  // Store cards
+  const sorted=[...myStores].sort((a,b)=>a.store.id.localeCompare(b.store.id));
+  const W=(typeof WEIGHTS!=='undefined')?WEIGHTS:{ops:50,mkt:30,att:20};
+  sorted.forEach(sd=>{
+    const sc=sd.scores;
+    const card=h('div',{className:'card fu',style:{marginBottom:'10px',cursor:'pointer',transition:'box-shadow .15s,border-color .15s',border:`1.5px solid ${sc.total<85?'#EF9A9A':'rgba(0,0,0,.05)'}`},
+      onClick:()=>{S.sel=sd.store.id;S.view='detail';render();}});
+    card.addEventListener('mouseenter',()=>{card.style.boxShadow='0 4px 16px rgba(0,0,0,.1)';});
+    card.addEventListener('mouseleave',()=>{card.style.boxShadow='';});
+    const top=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'10px'}});
+    // Left
+    const left=h('div',{style:{display:'flex',alignItems:'center',gap:'14px'}});
+    left.appendChild(h('div',{innerHTML:ringSVG(sc.total,100,sc.grade.c,56)}));
+    const info=h('div',{});
+    info.appendChild(h('div',{style:{fontSize:'15px',fontWeight:800,color:'var(--g900)'}},`Yogurtland ${sd.store.id}`));
+    info.appendChild(h('div',{style:{fontSize:'11px',color:'var(--g500)',marginTop:'2px'}},`${STATE_NAMES[sd.store.st]||sd.store.st} · ${sd.store.r}`));
+    left.appendChild(info);top.appendChild(left);
+    // Right
+    const right=h('div',{style:{display:'flex',alignItems:'center',gap:'16px',flexWrap:'wrap'}});
+    [{l:'OPS',v:sc.ops.scl,m:W.ops,c:'#1565C0'},{l:'MKT',v:sc.mkt.scl,m:W.mkt,c:'#E91E63'},{l:'ATT',v:sc.att.score,m:W.att,c:'#00897B'}].forEach(b=>{
+      const bw=h('div',{style:{textAlign:'center',minWidth:'40px'}});
+      bw.appendChild(h('div',{style:{fontSize:'9px',fontWeight:700,color:b.c,textTransform:'uppercase',letterSpacing:'.5px'}},b.l));
+      bw.appendChild(h('div',{style:{fontFamily:'var(--m)',fontSize:'14px',fontWeight:800,color:b.c}},b.v.toFixed(1)));
+      bw.appendChild(h('div',{style:{fontSize:'9px',color:'var(--g400)'}},`/${b.m}`));
+      right.appendChild(bw);
+    });
+    right.appendChild(h('span',{style:{fontFamily:'var(--m)',fontWeight:700,padding:'4px 14px',borderRadius:'7px',fontSize:'14px',background:sc.grade.bg||'#eee',color:sc.grade.c}},sc.grade.g));
+    right.appendChild(h('span',{style:{color:'var(--g400)',fontSize:'20px',fontWeight:300}},'›'));
+    top.appendChild(right);card.appendChild(top);wrap.appendChild(card);
+  });
+  return wrap;
+}
+
 // ── MAIN RENDER ──
 function render(){destroyCharts();const app=document.getElementById('app');app.innerHTML='';
-const hdr=h('header',{className:'hdr'});const left=h('div',{className:'hdr-left'});left.appendChild(h('div',{className:'hdr-brand'},h('img',{className:'hdr-logo',src:'./logo-yogurtland.svg',alt:'Yogurtland'}),h('div',{},h('div',{className:'hdr-s'},'Franchisee Scorecard')))); 
-const nav=h('nav',{style:{display:'flex',gap:'2px',marginLeft:'14px'}});[{id:'dashboard',l:'📊 Dashboard'},{id:'sales',l:'💰 Sales'},{id:'admin',l:'⚙️ Admin'}].forEach(n=>{nav.appendChild(h('button',{className:`nav-btn ${S.view===n.id||(S.view==='detail'&&n.id==='dashboard')?'active':''}`,onClick:()=>{S.view=n.id;S.sel=null;render();}},n.l));});left.appendChild(nav);hdr.appendChild(left);
-const right=h('div',{className:'hdr-right'});right.appendChild(h('div',{style:{fontSize:'10px',color:'var(--g500)'}},'v8.0 · 2026'));right.appendChild(h('div',{className:'avatar'},'SK'));hdr.appendChild(right);app.appendChild(hdr);
+// ── No user → show login ──
+if(!S.fbcUser){app.appendChild(renderLogin());return;}
+// ── Header ──
+const hdr=h('header',{className:'hdr'});
+const left=h('div',{className:'hdr-left'});
+left.appendChild(h('div',{className:'hdr-brand'},h('img',{className:'hdr-logo',src:'./logo-yogurtland.svg',alt:'Yogurtland'}),h('div',{},h('div',{className:'hdr-s'},'Franchisee Scorecard'))));
+if(S.fbcRole==='admin'){
+  const nav=h('nav',{style:{display:'flex',gap:'2px',marginLeft:'14px'}});
+  [{id:'dashboard',l:'📊 Dashboard'},{id:'admin',l:'⚙️ Admin'}].forEach(n=>{nav.appendChild(h('button',{className:`nav-btn ${S.view===n.id||(S.view==='detail'&&n.id==='dashboard')?'active':''}`,onClick:()=>{S.view=n.id;S.sel=null;render();}},n.l));});
+  left.appendChild(nav);
+} else {
+  const nav=h('nav',{style:{display:'flex',gap:'2px',marginLeft:'14px'}});
+  nav.appendChild(h('button',{className:`nav-btn ${S.view==='fbcportal'||(S.view==='detail')?'active':''}`,onClick:()=>{S.view='fbcportal';S.sel=null;render();}},'🏪 My Stores'));
+  left.appendChild(nav);
+}
+hdr.appendChild(left);
+const right=h('div',{className:'hdr-right'});
+const uColor=S.fbcUser==='Katie Lincon'?'#7B1FA2':S.fbcUser==='Tim Lyons'?'#1565C0':S.fbcUser==='Mario Marquez'?'#00897B':'#E91E63';
+const uInit=S.fbcUser.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+right.appendChild(h('div',{style:{fontSize:'11px',fontWeight:600,color:'var(--g600)'}},(S.fbcRole==='admin'?'Admin':'FBC')+' · '+S.fbcUser));
+right.appendChild(h('div',{className:'avatar',style:{background:uColor,cursor:'default'}},uInit));
+right.appendChild(h('button',{className:'pill',style:{fontSize:'10px'},onClick:()=>{S.fbcUser=null;S.fbcRole=null;S.view='dashboard';render();}},'Log out'));
+hdr.appendChild(right);app.appendChild(hdr);
 const main=h('main',{className:'main'});
-if(S.view==='dashboard'){main.appendChild(renderDashboard());app.appendChild(main);requestAnimationFrame(initDashboardCharts);}
+if(S.view==='dashboard'&&S.fbcRole==='admin'){main.appendChild(renderDashboard());app.appendChild(main);requestAnimationFrame(initDashboardCharts);}
+else if(S.view==='fbcportal'||(S.fbcRole==='fbc'&&S.view==='dashboard')){main.appendChild(renderFbcPortal());app.appendChild(main);}
 else if(S.view==='detail'){main.appendChild(renderDetail());app.appendChild(main);}
-else if(S.view==='sales'){main.appendChild(renderSales());app.appendChild(main);}
-else if(S.view==='admin'){main.appendChild(renderAdmin());app.appendChild(main);}
+else if(S.view==='admin'&&S.fbcRole==='admin'){main.appendChild(renderAdmin());app.appendChild(main);}
+else{main.appendChild(renderDashboard());app.appendChild(main);requestAnimationFrame(initDashboardCharts);}
 }
 initData();applyStoredOverrides();render();
 </script></body></html>
