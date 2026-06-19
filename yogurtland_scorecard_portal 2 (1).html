@@ -1648,24 +1648,6 @@ if(data.length===1&&SALES.length){
   const dsStats=h('div',{className:'g4 fu'});
   dsPeriods.forEach(p=>{const s=salesSummary(p.b.start,p.b.end);const pyS=salesPriorYear(p.b.start),pyE=salesPriorYear(p.b.end);const py=salesSummary(pyS,pyE);const c=h('div',{className:'card'});c.appendChild(h('div',{className:'sl'},p.l));c.appendChild(h('div',{className:'sv',style:{color:'var(--gn)',fontSize:'24px'}},salesMoney(s.cents)));c.appendChild(h('div',{className:'sn'},`${s.txn.toLocaleString()} transactions`));c.appendChild(h('div',{className:'sn',style:{fontWeight:700,color:'var(--bl)'}},`Volume: ${salesVolume(s.volumeRows?s.volume:null)}`));c.appendChild(h('div',{className:'sn'},salesRangeLabel(p.b.start,p.b.end)));const sBadge=salesPctBadge(s.cents,py.cents,'Sales','var(--gn)');if(sBadge)c.appendChild(sBadge);const vBadge=salesPctBadge(s.volumeRows?s.volume:0,py.volumeRows?py.volume:0,'Volume','var(--bl)');if(vBadge)c.appendChild(vBadge);dsStats.appendChild(c);});
   dsSalesWrap.appendChild(dsStats);
-  function buildDsSlices(start,end){const PIE_DS=['#FF6B35','#EF4444','#10B981','#F59E0B','#8B5CF6','#EC4899','#06B6D4'];const sm=salesSummary(start,end);const tp=TPD_PLATFORMS.map((p,i)=>({name:p,cents:tpdSummary(p,start,end).cents,col:PIE_DS[(i+1)%PIE_DS.length]}));const tt=tp.reduce((a,p)=>a+p.cents,0);return[{name:'In-Store',cents:Math.max(0,sm.cents-tt),col:PIE_DS[0]},...tp].filter(d=>d.cents>0);}
-  function buildDsPanel(title,dateLabel,canvasId,slices){const total=slices.reduce((s,d)=>s+d.cents,0);if(!total)return null;const panel=h('div',{style:{flex:'1',minWidth:'0'}});panel.appendChild(h('div',{style:{fontWeight:700,fontSize:'13px',marginBottom:'12px'}},title+' — '+dateLabel));const inner=h('div',{style:{display:'flex',alignItems:'center',gap:'24px'}});const box=h('div',{style:{position:'relative',width:'180px',height:'180px',flexShrink:'0'}});box.appendChild(h('canvas',{id:canvasId}));inner.appendChild(box);const leg=h('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}});slices.forEach(d=>{const pct=(d.cents/total*100).toFixed(1);const row=h('div',{style:{display:'flex',alignItems:'center',gap:'8px'}});row.appendChild(h('div',{style:{width:'12px',height:'12px',borderRadius:'3px',background:d.col,flexShrink:'0'}}));const info=h('div',{});info.appendChild(h('div',{style:{fontWeight:700,fontSize:'12px'}},d.name));info.appendChild(h('div',{style:{fontSize:'11px',color:'var(--g500)'}},salesMoney(d.cents)+' · '+pct+'%'));row.appendChild(info);leg.appendChild(row);});inner.appendChild(leg);panel.appendChild(inner);return{el:panel,slices,total};}
-  const dsMoSlices=buildDsSlices(moB.start,moB.end);const dsYrSlices=buildDsSlices(yrB.start,yrB.end);
-  if(dsMoSlices.length>0||dsYrSlices.length>0){
-    const dsMixCard=h('div',{className:'card fu',style:{marginTop:'12px'}});
-    dsMixCard.appendChild(h('div',{className:'sh'},h('h3',{},'Sales Mix')));
-    const dsMixRow=h('div',{style:{display:'flex',gap:'32px',padding:'8px 16px 16px',flexWrap:'wrap'}});
-    const dsMoPanel=buildDsPanel('Monthly',salesRangeLabel(moB.start,moB.end),'cDashSalesPieMo',dsMoSlices);
-    const dsYrPanel=buildDsPanel('Yearly',salesRangeLabel(yrB.start,yrB.end),'cDashSalesPieYr',dsYrSlices);
-    if(dsMoPanel){dsMixRow.appendChild(dsMoPanel.el);dsMixRow.appendChild(h('div',{style:{width:'1px',background:'var(--g200)',alignSelf:'stretch'}}));}
-    if(dsYrPanel)dsMixRow.appendChild(dsYrPanel.el);
-    dsMixCard.appendChild(dsMixRow);dsSalesWrap.appendChild(dsMixCard);
-    requestAnimationFrame(()=>{
-      ['dashSalesPieMo','dashSalesPieYr'].forEach(k=>{if(S.charts[k]){try{S.charts[k].destroy();}catch(e){}}});
-      if(dsMoPanel){const ctx=document.getElementById('cDashSalesPieMo');if(ctx)S.charts.dashSalesPieMo=new Chart(ctx,{type:'doughnut',data:{labels:dsMoPanel.slices.map(d=>d.name),datasets:[{data:dsMoPanel.slices.map(d=>d.cents),backgroundColor:dsMoPanel.slices.map(d=>d.col),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>' '+salesMoney(c.raw)+' ('+(c.raw/dsMoPanel.total*100).toFixed(1)+'%)'}}}}});}
-      if(dsYrPanel){const ctx=document.getElementById('cDashSalesPieYr');if(ctx)S.charts.dashSalesPieYr=new Chart(ctx,{type:'doughnut',data:{labels:dsYrPanel.slices.map(d=>d.name),datasets:[{data:dsYrPanel.slices.map(d=>d.cents),backgroundColor:dsYrPanel.slices.map(d=>d.col),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>' '+salesMoney(c.raw)+' ('+(c.raw/dsYrPanel.total*100).toFixed(1)+'%)'}}}}});}
-    });
-  }
   wrap.appendChild(dsSalesWrap);
 }
 
