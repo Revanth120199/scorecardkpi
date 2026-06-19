@@ -1,0 +1,28 @@
+# Excel temp/lock files
+~$*.xlsx
+
+# Claude session data
+.claude/
+
+# Screenshots
+image*.png
+!image copy 10.png
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
